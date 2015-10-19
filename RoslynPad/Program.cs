@@ -13,17 +13,18 @@ namespace RoslynPad
     {
         static void Main(string[] args)
         {
-            TestingSymbolVisitor();
+            TestingMethodSymbolVisitor();
             Console.ReadKey();
         }
 
         public static void TestingSymbolVisitor()
         {
-            var visitor = new NamedTypeVisitor();
-
             var tree = CSharpSyntaxTree.ParseText(@"
-            class C
+            class MyClass
             {
+                class Nested
+                {
+                }
                 void M()
                 {
                 }
@@ -33,7 +34,28 @@ namespace RoslynPad
             var compilation = CSharpCompilation.Create("MyCompilation",
                 syntaxTrees: new[] { tree }, references: new[] { mscorlib });
 
+            var visitor = new NamedTypeVisitor();
+            visitor.Visit(compilation.GlobalNamespace);
+        }
 
+        public static void TestingMethodSymbolVisitor()
+        {
+            var tree = CSharpSyntaxTree.ParseText(@"
+            class MyClass
+            {
+                class Nested
+                {
+                }
+                void M()
+                {
+                }
+            }");
+
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            var compilation = CSharpCompilation.Create("MyCompilation",
+                syntaxTrees: new[] { tree }, references: new[] { mscorlib });
+
+            var visitor = new MethodSymbolVisitor();
             visitor.Visit(compilation.GlobalNamespace);
         }
     }
